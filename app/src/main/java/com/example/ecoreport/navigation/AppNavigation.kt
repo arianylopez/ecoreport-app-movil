@@ -158,6 +158,12 @@ fun AppNavigation(
                 reporte =
                     reporteSeleccionado,
 
+                actualizarReporte = {
+                    reporteActualizado ->
+                    viewModel.actualizar(reporteActualizado)
+                    reporteSeleccionado = reporteActualizado
+                },
+
                 eliminarReporte = { reporte ->
 
                     viewModel.eliminar(reporte)
@@ -167,7 +173,6 @@ fun AppNavigation(
                 },
 
                 volver = {
-
                     navController
                         .popBackStack()
                 }

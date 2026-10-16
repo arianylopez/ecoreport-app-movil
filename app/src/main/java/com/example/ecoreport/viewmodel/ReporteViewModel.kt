@@ -53,6 +53,14 @@ class ReporteViewModel (
         }
     }
 
+    fun actualizar(reporte: ReporteEntity) {
+        viewModelScope.launch {
+            repository.actualizar(reporte)
+
+            cargarReportes()
+        }
+    }
+
     fun eliminar(reporte: ReporteEntity) {
         viewModelScope.launch {
             repository.eliminar(reporte)
@@ -60,4 +68,4 @@ class ReporteViewModel (
             cargarReportes()
         }
     }
-}
+}
