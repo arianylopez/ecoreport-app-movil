@@ -11,6 +11,11 @@ class ReporteRepository (
         return reporteDao.obtenerTodos()
     }
 
+    suspend fun obtenerPorEstado(estado: String):
+            List<ReporteEntity> {
+        return reporteDao.obtenerPorEstado(estado)
+    }
+
     suspend fun insertar(reporte: ReporteEntity){
         reporteDao.insertar(reporte)
     }

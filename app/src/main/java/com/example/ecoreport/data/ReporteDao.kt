@@ -20,6 +20,13 @@ interface ReporteDao {
     suspend fun obtenerTodos():
             List<ReporteEntity>
 
+    @Query(
+        "SELECT * FROM reportes WHERE estado = :estado ORDER BY id DESC"
+    )
+    suspend fun obtenerPorEstado(
+        estado: String
+    ): List<ReporteEntity>
+
     @Update
     suspend fun actualizar(
         reporte: ReporteEntity

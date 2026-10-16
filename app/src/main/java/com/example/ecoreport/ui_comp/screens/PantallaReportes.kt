@@ -3,6 +3,7 @@ package com.example.ecoreport.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -22,9 +24,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.ecoreport.data.ReporteEntity
 
+private val opcionesFiltro: List<Pair<String, String?>> = listOf(
+    "Todos" to null,
+    "Pendiente" to "PENDIENTE",
+    "En proceso" to "EN_PROCESO",
+    "Resuelto" to "RESUELTO"
+)
+
 @Composable
 fun PantallaReportes(
     reportes: List<ReporteEntity>,
+    filtroEstado: String?,
+    filtrarPorEstado: (String?) -> Unit,
     seleccionarReporte: (ReporteEntity) -> Unit,
     volver: () -> Unit
 ) {
@@ -40,6 +51,22 @@ fun PantallaReportes(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
+
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            opcionesFiltro.forEach { (etiqueta, valor) ->
+                FilterChip(
+                    selected = filtroEstado == valor,
+                    onClick = { filtrarPorEstado(valor) },
+                    label = { Text(text = etiqueta) }
+                )
+            }
+        }
 
         Spacer(
             modifier = Modifier.height(16.dp)
@@ -139,4 +166,4 @@ fun PantallaReportes(
             )
         }
     }
-}
+}

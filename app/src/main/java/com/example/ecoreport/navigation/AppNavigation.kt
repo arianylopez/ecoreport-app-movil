@@ -18,7 +18,14 @@ fun AppNavigation(
     val navController =
         rememberNavController()
 
-    val viewModel: ReporteViewModel = viewModel()
+    val viewModel: ReporteViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return ReporteViewModel(repository) as T
+            }
+        }
+    )
     val reportes =
         remember {
             mutableStateListOf<
@@ -118,6 +125,13 @@ fun AppNavigation(
             PantallaReportes(
                 reportes =
                     viewModel.reportes,
+
+                filtroEstado =
+                    viewModel.filtroEstado,
+
+                filtrarPorEstado = { estado ->
+                    viewModel.filtrarPorEstado(estado)
+                },
 
                 seleccionarReporte = { reporte ->
 

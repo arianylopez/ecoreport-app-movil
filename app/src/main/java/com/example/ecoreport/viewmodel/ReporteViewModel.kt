@@ -1,5 +1,8 @@
 package com.example.ecoreport.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecoreport.data.ReporteEntity
@@ -11,6 +14,9 @@ class ReporteViewModel (
 ): ViewModel() {
     val reportes = mutableListOf<ReporteEntity>()
 
+    var filtroEstado by mutableStateOf<String?>(null)
+        private set
+
     init {
         cargarReportes()
     }
@@ -18,6 +24,21 @@ class ReporteViewModel (
     fun cargarReportes() {
         viewModelScope.launch {
             val datos = repository.obtenerTodos()
+
+            reportes.clear()
+
+            reportes.addAll(datos)
+        }
+    }
+
+    fun filtrarPorEstado(estado: String?) {
+        filtroEstado = estado
+        viewModelScope.launch {
+            val datos = if (estado == null) {
+                repository.obtenerTodos()
+            } else {
+                repository.obtenerPorEstado(estado)
+            }
 
             reportes.clear()
 
@@ -39,4 +60,4 @@ class ReporteViewModel (
             cargarReportes()
         }
     }
-}
+}
