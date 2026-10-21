@@ -49,10 +49,6 @@ fun AppNavigation(
         mutableStateOf<ReporteEntity?>(null)
     }
 
-    val categoriaSeleccionada by viewModel
-        .categoriaSeleccionada
-        .collectAsStateWithLifecycle()
-
     NavHost(
         navController = navController,
         startDestination = "inicio"
@@ -110,15 +106,17 @@ fun AppNavigation(
 
         composable("reportes") {
 
+            val filtros by viewModel.filtros.collectAsStateWithLifecycle()
+            val reportesFiltrados by viewModel.reportesFiltrados
+                .collectAsStateWithLifecycle()
+
             PantallaReportes(
-                reportes = reportes,
-
-                categoriaSeleccionada = categoriaSeleccionada,
-
-                seleccionarCategoria = {
-                    categoria ->
-                    viewModel.seleccionarCategoria(categoria)
-                },
+                reportes = reportesFiltrados,
+                hayReportes = reportes.isNotEmpty(),
+                filtros = filtros,
+                seleccionarEstado = viewModel::seleccionarEstado,
+                cambiarCategoria = viewModel::cambiarCategoria,
+                buscar = viewModel::buscar,
 
                 seleccionarReporte = {
                         reporte ->
