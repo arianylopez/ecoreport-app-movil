@@ -1,19 +1,23 @@
 package com.example.ecoreport.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecoreport.data.ReporteEntity
 import com.example.ecoreport.data.remote.ReporteDto
 import com.example.ecoreport.repository.ReporteRepository
+import java.io.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ReporteViewModel (
     private val repository: ReporteRepository
 ): ViewModel() {
@@ -21,6 +25,7 @@ class ReporteViewModel (
     private val _categoriaSeleccionada = MutableStateFlow<String?>(null)
 
     private val _reportesRemotos = MutableStateFlow<List<ReporteDto>>(emptyList())
+    val reportesRemotos = _reportesRemotos.asStateFlow()
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando
 
@@ -43,6 +48,32 @@ class ReporteViewModel (
             )
 
 
+
+    fun cargarReportesRemotos() {
+        if (_cargando.value) return
+
+        _cargando.value = true
+        _error.value = null
+
+        viewModelScope.launch {
+            try {
+                _reportesRemotos.value = repository.obtenerReportesRemotos()
+            } catch (cancelacion: CancellationException) {
+                throw cancelacion
+            } catch (error: Exception) {
+                _error.value = when (error) {
+                    is HttpException ->
+                        "La API respondió con el error ${error.code()}. Intenta nuevamente."
+                    is IOException ->
+                        "No se pudo conectar con la API. Revisa tu conexión e intenta nuevamente."
+                    else ->
+                        "No se pudieron cargar los reportes. Intenta nuevamente."
+                }
+            } finally {
+                _cargando.value = false
+            }
+        }
+    }
 
     fun insertar(reporte: ReporteEntity) {
         viewModelScope.launch {

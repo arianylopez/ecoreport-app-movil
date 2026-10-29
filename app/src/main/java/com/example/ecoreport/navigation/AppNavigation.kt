@@ -1,6 +1,7 @@
 package com.example.ecoreport.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,6 +17,7 @@ import com.example.ecoreport.ui_comp.screens.PantallaDetalle
 import com.example.ecoreport.ui_comp.screens.PantallaEstadisticas
 import com.example.ecoreport.ui_comp.screens.PantallaRegistro
 import com.example.ecoreport.ui_comp.screens.PantallaReportes
+import com.example.ecoreport.ui_comp.screens.PantallaReportesRemotos
 import com.example.ecoreport.ui_comp.screens.PantallaInicio
 import com.example.ecoreport.viewmodel.ReporteViewModel
 import com.example.ecoreport.viewmodel.ReporteViewModelFactory
@@ -77,6 +79,10 @@ fun AppNavigation(
                     )
                 },
 
+                irReportesRemotos = {
+                    navController.navigate("reportes_remotos")
+                },
+
                 irEstadisticas = {
 
                     navController.navigate(
@@ -136,6 +142,25 @@ fun AppNavigation(
                     navController
                         .popBackStack()
                 }
+            )
+        }
+
+        composable("reportes_remotos") {
+            val reportesRemotos by viewModel.reportesRemotos.collectAsStateWithLifecycle()
+            val cargando by viewModel.cargando.collectAsStateWithLifecycle()
+            val error by viewModel.error.collectAsStateWithLifecycle()
+
+            // La consulta se realiza al entrar, no en cada recomposición de la pantalla.
+            LaunchedEffect(viewModel) {
+                viewModel.cargarReportesRemotos()
+            }
+
+            PantallaReportesRemotos(
+                reportes = reportesRemotos,
+                cargando = cargando,
+                error = error,
+                consultar = viewModel::cargarReportesRemotos,
+                volver = { navController.popBackStack() }
             )
         }
 

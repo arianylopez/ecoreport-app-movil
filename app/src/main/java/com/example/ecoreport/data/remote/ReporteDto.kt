@@ -1,7 +1,7 @@
 package com.example.ecoreport.data.remote
 
 data class ReporteDto(
-    val id: Int,
+    val id: String,
     val titulo: String,
     val descripcion: String,
     val categoria: String,
