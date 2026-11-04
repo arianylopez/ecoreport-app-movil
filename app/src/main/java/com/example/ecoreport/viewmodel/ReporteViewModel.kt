@@ -1,16 +1,15 @@
 package com.example.ecoreport.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecoreport.data.ReporteEntity
 import com.example.ecoreport.data.remote.CrearReporteDto
 import com.example.ecoreport.data.remote.ReporteDto
 import com.example.ecoreport.repository.ReporteRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -69,21 +68,8 @@ class ReporteViewModel (
     val error: StateFlow<String?> = _error
 
     fun cargarReportesRemotos() {
-        viewModelScope.launch {
-            _cargando.value = true
-            _error.value = null
-
-            try {
-                val datos = repository.obtenerReportesRemotos()
-
-                _reportesRemotos.value = datos
-            } catch (
-                e: Exception
-            ) {
-                _error.value = "No se pudieron cargar los reportes"
-            } finally {
-                _cargando.value = false
-            }
+        ejecutarOperacionRemota("No se pudieron cargar los reportes. Intenta nuevamente.") {
+            _reportesRemotos.value = repository.obtenerReportesRemotos()
         }
     }
 
@@ -93,32 +79,60 @@ class ReporteViewModel (
         categoria: String,
         ubicacion: String,
         estado: String,
-        fecha: String
+        fecha: String,
+        onExito: () -> Unit = {}
     ) {
+        ejecutarOperacionRemota("No se pudo crear el reporte. Intenta nuevamente.") {
+            val creado = repository.crearReporte(
+                CrearReporteDto(titulo, descripcion, categoria, ubicacion, estado, fecha)
+            )
+            _reportesRemotos.value = _reportesRemotos.value + creado
+            onExito()
+        }
+    }
+
+    fun actualizarReporteRemoto(
+        id: Int,
+        reporte: CrearReporteDto,
+        onExito: () -> Unit = {}
+    ) {
+        ejecutarOperacionRemota("No se pudo actualizar el reporte. Intenta nuevamente.") {
+            val actualizado = repository.editarReporte(id, reporte)
+            _reportesRemotos.value = _reportesRemotos.value.map {
+                if (it.id == id) actualizado else it
+            }
+            onExito()
+        }
+    }
+
+    fun eliminarReporteRemoto(id: Int, onExito: () -> Unit = {}) {
+        ejecutarOperacionRemota("No se pudo eliminar el reporte. Intenta nuevamente.") {
+            repository.eliminarReporte(id)
+            _reportesRemotos.value = _reportesRemotos.value.filterNot { it.id == id }
+            onExito()
+        }
+    }
+
+    fun limpiarErrorRemoto() {
+        _error.value = null
+    }
+
+    private fun ejecutarOperacionRemota(mensajeError: String, operacion: suspend () -> Unit) {
+        // Evita solicitudes simultáneas y mantiene la carga activa hasta terminar.
+        if (_cargando.value) return
+        _cargando.value = true
+        _error.value = null
+
         viewModelScope.launch {
-            _cargando.value = true
-
-            _error.value = null
-
             try {
-                val reporte = CrearReporteDto(
-                    titulo,
-                    descripcion,
-                    categoria,
-                    ubicacion,
-                    estado = "PENDIENTE",
-                    fecha
-                )
-
-                repository.crearReporte(reporte)
-                cargarReportesRemotos()
+                operacion()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _error.value = "Hubo un error al momento de crear el registro, por favor comuniquese con soporte"
+                _error.value = mensajeError
             } finally {
                 _cargando.value = false
             }
         }
     }
-
-
 }

@@ -9,7 +9,8 @@ import retrofit2.http.Path
 
 interface ReporteApiService {
 
-    @GET("reportes")//BASE_URL = http://api.ejemplo.com/reportes
+    // Recurso "reportes" del proyecto EcoReport en MockAPI.
+    @GET("reportes")
     suspend fun obtenerReportes():
             List<ReporteDto>
 

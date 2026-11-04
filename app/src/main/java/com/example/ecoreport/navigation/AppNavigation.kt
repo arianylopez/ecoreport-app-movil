@@ -238,6 +238,23 @@ fun AppNavigation(
                 error =
                     error,
 
+                crearReporte = { reporte, onExito ->
+                    viewModel.crearNuevoReporteRemoto(
+                        titulo = reporte.titulo,
+                        descripcion = reporte.descripcion,
+                        categoria = reporte.categoria,
+                        ubicacion = reporte.ubicacion,
+                        estado = reporte.estado,
+                        fecha = reporte.fecha,
+                        onExito = onExito
+                    )
+                },
+
+                actualizarReporte = viewModel::actualizarReporteRemoto,
+                eliminarReporte = viewModel::eliminarReporteRemoto,
+                recargar = viewModel::cargarReportesRemotos,
+                limpiarError = viewModel::limpiarErrorRemoto,
+
                 volver = {
 
                     navController
